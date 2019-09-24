@@ -11,6 +11,7 @@ import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
 import org.jose4j.keys.resolvers.VerificationKeyResolver;
+import org.jose4j.keys.resolvers.X509VerificationKeyResolver;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -19,19 +20,29 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 public class JwtFilter extends GenericFilterBean {
 
     private static final String requiredScope = "serviceklient";
-    private VerificationKeyResolver keyresolver;
+    private X509VerificationKeyResolver keyresolver;
 
     public JwtFilter() {
         try {
-            HttpsJwks httpsJkws = new HttpsJwks("https://topdanmark.id42.dk/auth/realms/demo/protocol/openid-connect/certs");
-            keyresolver = new HttpsJwksVerificationKeyResolver(httpsJkws);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate)cf.generateCertificate(new FileInputStream("oidc_public.pem"));
+
+            keyresolver = new X509VerificationKeyResolver(cert);
+            keyresolver.setTryAllOnNoThumbHeader(true);
+
+
+//            HttpsJwks httpsJkws = new HttpsJwks("https://topdanmark.id42.dk/auth/realms/demo/protocol/openid-connect/certs");
+//            keyresolver = new HttpsJwksVerificationKeyResolver(httpsJkws);
         } catch (Exception e) {
             logger.error("Failed to create keyresolver:", e);
             throw new RuntimeException("Could not initialise JwtFilter");

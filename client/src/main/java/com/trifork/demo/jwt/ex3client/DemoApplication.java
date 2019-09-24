@@ -35,7 +35,7 @@ public class DemoApplication implements CommandLineRunner {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Authorization", "Bearer " + getAT());
 			HttpEntity entity = new HttpEntity(headers);
-			ResponseEntity<String> answer = restTemplate.exchange("http://adder:8443/add/2/2", HttpMethod.GET, entity, String.class);
+			ResponseEntity<String> answer = restTemplate.exchange("http://localhost:8443/add/2/2", HttpMethod.GET, entity, String.class);
 
 			logger.info("The answer is {}", answer.getBody());
 		} catch (Exception e) {
