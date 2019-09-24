@@ -9,6 +9,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class CustomSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-    //    http.addFilterAfter(new JwtFilter(), BasicAuthenticationFilter.class);
+       http.addFilterAfter(new JwtFilter(), BasicAuthenticationFilter.class);
     }
 }
