@@ -1,10 +1,8 @@
 package com.trifork.demo.jwt.ex3client;
 
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -14,9 +12,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
+import java.io.FileInputStream;
+import java.security.KeyStore;
 
 @SpringBootApplication
 public class DemoApplication implements CommandLineRunner {
@@ -30,12 +30,30 @@ public class DemoApplication implements CommandLineRunner {
 	public void run(String... args)  {
 		logger.info("Hello world!");
 		try {
-			RestTemplate restTemplate = new RestTemplate();
+			KeyStore ks = KeyStore.getInstance("JKS");
+			ks.load(new FileInputStream("truststore.jks"), "Test1234".toCharArray());
+
+			KeyStore keyStore;
+			keyStore = KeyStore.getInstance("JKS");
+			keyStore.load(new FileInputStream("adderclient.jks"), "Test1234".toCharArray());
+
+			HttpClient httpClient = HttpClients
+					.custom()
+					.setSSLContext(new SSLContextBuilder()
+							.loadTrustMaterial(ks, null)
+							.loadKeyMaterial(keyStore, "Test1234".toCharArray())
+							.build())
+					.build();
+
+
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setHttpClient(httpClient);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Authorization", "Bearer " + getAT());
 			HttpEntity entity = new HttpEntity(headers);
-			ResponseEntity<String> answer = restTemplate.exchange("http://localhost:8443/add/2/2", HttpMethod.GET, entity, String.class);
+			ResponseEntity<String> answer = restTemplate.exchange("https://adder:8443/add/2/2", HttpMethod.GET, entity, String.class);
 
 			logger.info("The answer is {}", answer.getBody());
 		} catch (Exception e) {

@@ -40,9 +40,9 @@ public class JwtFilter extends GenericFilterBean {
             keyresolver = new X509VerificationKeyResolver(cert);
             keyresolver.setTryAllOnNoThumbHeader(true);
 
-
 //            HttpsJwks httpsJkws = new HttpsJwks("https://topdanmark.id42.dk/auth/realms/demo/protocol/openid-connect/certs");
 //            keyresolver = new HttpsJwksVerificationKeyResolver(httpsJkws);
+
         } catch (Exception e) {
             logger.error("Failed to create keyresolver:", e);
             throw new RuntimeException("Could not initialise JwtFilter");
